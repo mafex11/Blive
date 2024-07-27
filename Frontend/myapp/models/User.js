@@ -10,8 +10,10 @@ const UserSchema = new mongoose.Schema({
     streamId: String,
     streamKey: String,
     playbackUrl: String,
+    playbackId: String,
     createdAt: Date,
     status: String,
+    streamTitle: String, // Add this line to include streamTitle
   }],
 });
 

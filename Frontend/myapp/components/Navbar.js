@@ -19,7 +19,7 @@ export default function Navbar() {
   };
 
   const handleWatchStreamRedirect = () => {
-    router.push('/watchStream'); // Redirect to the Watch Stream page
+    router.push('/watch'); // Redirect to the Watch Stream page
   };
 
   return (

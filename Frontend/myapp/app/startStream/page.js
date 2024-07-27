@@ -1,14 +1,12 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Hls from 'hls.js';
 import detectEthereumProvider from '@metamask/detect-provider';
 
 const StartStream = () => {
   const [streamTitle, setStreamTitle] = useState('');
   const [message, setMessage] = useState('');
   const [streamInfo, setStreamInfo] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [status, setStatus] = useState('');
   const [address, setAddress] = useState('');
   const router = useRouter();
@@ -51,7 +49,7 @@ const StartStream = () => {
       if (response.ok) {
         setStreamInfo(data);
         setStatus(data.status);
-        setMessage(`Stream created successfully!`);
+        setMessage('Stream created successfully!');
 
         // Start checking the stream status
         const id = setInterval(() => checkStreamStatus(data.streamId), 2000);
@@ -71,6 +69,14 @@ const StartStream = () => {
       const data = await response.json();
       if (response.ok) {
         setStatus(data.status);
+
+        // Update the status in MongoDB
+        await fetch('/api/update-stream-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ streamId, status: data.status }),
+        });
+
         if (data.status === 'active') {
           clearInterval(intervalId);
         }
@@ -80,63 +86,75 @@ const StartStream = () => {
     }
   };
 
-  useEffect(() => {
-    if (streamInfo && streamInfo.playbackUrl) {
-      const video = document.getElementById('video');
-      if (Hls.isSupported()) {
-        const hls = new Hls();
-        hls.loadSource(streamInfo.playbackUrl);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          video.play();
-          setIsPlaying(true);
-        });
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = streamInfo.playbackUrl;
-        video.addEventListener('loadedmetadata', () => {
-          video.play();
-          setIsPlaying(true);
-        });
-      }
+  const handleDoneStreaming = () => {
+    if (status === 'active') {
+      setMessage('Stop streaming before finishing.');
+      return;
     }
-  }, [streamInfo]);
+
+    setStreamTitle('');
+    setMessage('');
+    setStreamInfo(null);
+    setStatus('');
+    setAddress('');
+    setIntervalId(null);
+    router.reload(); // Reset the page
+  };
 
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">Start Stream</h1>
-      <input
-        type="text"
-        placeholder="Enter stream title"
-        value={streamTitle}
-        onChange={(e) => setStreamTitle(e.target.value)}
-        className="p-2 border border-gray-300 rounded mb-4"
-      />
-      <button
-        onClick={handleStartStream}
-        className="p-2 bg-blue-500 text-white rounded"
-      >
-        Start Stream
-      </button>
-      
+      {!streamInfo ? (
+        <>
+          <input
+            type="text"
+            placeholder="Enter stream title"
+            value={streamTitle}
+            onChange={(e) => setStreamTitle(e.target.value)}
+            className="p-2 border border-gray-300 rounded mb-4"
+          />
+          <button
+            onClick={handleStartStream}
+            className="p-2 bg-blue-500 text-white rounded"
+          >
+            Start Stream
+          </button>
+        </>
+      ) : (
+        <button
+          onClick={handleDoneStreaming}
+          className={`p-2 text-white rounded ${status === 'active' ? 'bg-gray-500' : 'bg-red-500'}`}
+          disabled={status === 'active'}
+        >
+          Done Streaming
+        </button>
+      )}
+
       {message && <p className="mt-4">{message}</p>}
-      
+
       {streamInfo && (
         <div className="mt-4 space-y-2">
+          <p><strong>Stream Title:</strong> {streamTitle}</p>
           <p><strong>RTMP URL:</strong> {streamInfo.rtmpUrl}</p>
           <p><strong>Stream Key:</strong> {streamInfo.streamKey}</p>
           <p><strong>Playback URL:</strong> {streamInfo.playbackUrl}</p>
           <p><strong>Stream ID:</strong> {streamInfo.streamId}</p>
+          <p><strong>Playback ID:</strong> {streamInfo.playbackId}</p>
           <p><strong>Created At:</strong> {new Date(streamInfo.createdAt).toLocaleString()}</p>
           <p><strong>Status:</strong> {status}</p>
         </div>
       )}
-      
-      {isPlaying && (
-        <div className="mt-4">
-          <h2 className="text-lg font-bold mb-2">Live Stream</h2>
-          <video id="video" controls className="w-full h-auto" />
-        </div>
-      )}
+      <div className="absolute right-0 mr-48 h-56 w-96 bg-black">
+        {status === 'active' && streamInfo && (
+          <iframe
+            src={`https://lvpr.tv?v=${streamInfo.playbackId}`}
+            allowFullScreen
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+            frameBorder="0"
+            className="h-56 w-96"
+          ></iframe>
+        )}
+      </div>
     </div>
   );
 };

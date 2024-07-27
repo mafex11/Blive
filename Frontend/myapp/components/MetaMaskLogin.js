@@ -9,7 +9,6 @@ export default function MetaMaskLogin() {
   const [provider, setProvider] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Use useEffect to run client-specific code
   useEffect(() => {
     async function initializeProvider() {
       const detectedProvider = await detectEthereumProvider();

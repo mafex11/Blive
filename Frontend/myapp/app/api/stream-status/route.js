@@ -1,6 +1,10 @@
+// app/api/stream-status/route.js
 import { Livepeer } from 'livepeer';
+import mongoose from 'mongoose';
+import User from '../../../models/User';
+import connectToDatabase from '../../../lib/db';
 
-const apiKey = process.env.LIVEPEER_API_KEY; // Ensure this is set correctly
+const apiKey = process.env.LIVEPEER_API_KEY;
 const livepeer = new Livepeer({ apiKey });
 
 export async function GET(req, res) {
@@ -20,6 +24,15 @@ export async function GET(req, res) {
       playbackId,
       status
     } = response.stream;
+
+    // Connect to MongoDB
+    await connectToDatabase();
+
+    // Update the status in MongoDB
+    await User.updateOne(
+      { 'streams.streamId': streamId },
+      { $set: { 'streams.$.status': isActive ? 'active' : 'inactive' } }
+    );
 
     return new Response(JSON.stringify({
       playbackUrl: `https://livepeercdn.com/hls/${playbackId}/index.m3u8`,
