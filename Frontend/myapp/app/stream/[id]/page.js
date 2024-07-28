@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 const StreamPage = () => {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const id = pathname.split('/').pop();
   const [stream, setStream] = useState(null);
 
@@ -22,20 +21,19 @@ const StreamPage = () => {
   }, [id]);
 
   if (!stream) {
-    return <p>Loading...</p>;
+    return <p className="text-center mt-10">Loading...</p>;
   }
 
   return (
-    <div>
-      <h1>{stream.streamName}</h1>
+    <div className="flex flex-col items-center mt-10 px-4">
       <iframe
-        // src={`https://livepeercdn.com/hls/${stream.playbackId}/index.m3u8`}
-        src={`https://lvpr.tv?v=${stream.playbackId}`} 
-        width="640"
-        height="360"
+        src={`https://lvpr.tv?v=${stream.playbackId}`}
+        className="w-full md:w-3/4 lg:w-1/2 aspect-video mb-4"
         allow="autoplay; fullscreen"
         allowFullScreen
+        frameBorder="0"
       />
+      <h1 className="text-2xl font-bold text-center">{stream.streamTitle}</h1>
     </div>
   );
 };

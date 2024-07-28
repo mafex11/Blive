@@ -23,28 +23,31 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="flex justify-between items-center p-4 bg-gray-800 text-white">
-      <div className="flex items-center space-x-4">
-        {isClient && (
+    <nav className="bg-gray-800 text-white shadow-lg">
+      <div className="container mx-auto px-4 py-2 flex justify-between items-center">
+        <div className="text-2xl font-bold">YourApp</div>
+        <div className="flex space-x-4">
+          {isClient && (
+            <button
+              onClick={handleLoginRedirect}
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-700 rounded-md transition"
+            >
+              Login with MetaMask
+            </button>
+          )}
           <button
-            onClick={handleLoginRedirect}
-            className="p-2 bg-blue-500 hover:bg-blue-700 rounded"
+            onClick={handleStartStreamRedirect}
+            className="px-4 py-2 bg-green-500 hover:bg-green-700 rounded-md transition"
           >
-            Login with MetaMask
+            Start Stream
           </button>
-        )}
-        <button
-          onClick={handleStartStreamRedirect}
-          className="p-2 bg-green-500 hover:bg-green-700 rounded"
-        >
-          Start Stream
-        </button>
-        <button
-          onClick={handleWatchStreamRedirect}
-          className="p-2 bg-red-500 hover:bg-red-700 rounded"
-        >
-          Watch Stream
-        </button>
+          <button
+            onClick={handleWatchStreamRedirect}
+            className="px-4 py-2 bg-red-500 hover:bg-red-700 rounded-md transition"
+          >
+            Watch Stream
+          </button>
+        </div>
       </div>
     </nav>
   );

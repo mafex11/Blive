@@ -17,18 +17,20 @@ const WatchStreamPage = () => {
   }, []);
 
   return (
-    <div>
-      <h1>Watch Streams</h1>
+    <div className="p-4 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-bold mb-8 text-center">Watch Streams</h1>
       {activeStreams.length > 0 ? (
-        activeStreams.map((stream, index) => (
-          <div key={index}>
-            <Link href={`/stream/${stream.playbackId}`}>
-              {stream.streamTitle}
+        <div className="flex flex-wrap gap-4">
+          {activeStreams.map((stream, index) => (
+            <Link href={`/stream/${stream.playbackId}`} key={index} passHref>
+              <div className="block p-4 bg-blue-500 text-white rounded-lg shadow-md hover:shadow-lg hover:bg-blue-600 transition transform hover:-translate-y-1 cursor-pointer">
+                <h2 className="text-lg font-semibold">{stream.streamTitle}</h2>
+              </div>
             </Link>
-          </div>
-        ))
+          ))}
+        </div>
       ) : (
-        <p>No active streams available</p>
+        <p className="text-center text-gray-500">No active streams available</p>
       )}
     </div>
   );
